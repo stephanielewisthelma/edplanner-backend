@@ -4,10 +4,10 @@
   "description": "Backend for EdPlanner (Node.js + TypeScript)",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/Index.ts"
+  "dev": "nodemon --exec ts-node src/index.ts",
+  "build": "tsc",
+  "start": "node dist/index.js"
   },
-  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stephanielewisthelma/edplanner-backend.git"

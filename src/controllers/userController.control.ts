@@ -1,6 +1,6 @@
-import type { Response, Request, NextFunction } from "express";
-import { userServiceImplementation } from "../service/impl/user.implementation.js";
-import type { createUserDTO } from "../dtos/userDTO.dto.js";
+import { Response, Request, NextFunction } from "express";
+import { userServiceImplementation } from "../service/impl/user.implementation";
+import type { createUserDTO } from "../dtos/userDTO.dto";
 
 export class UserController {
   private userService: userServiceImplementation;

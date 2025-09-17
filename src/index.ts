@@ -1,8 +1,9 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import { errorHandler } from "./utils/errorhandler.util.js";
-import userRouter from "./routes/userRoute.routes.js";
+import userRouter from "./routes/userRoute.routes";
+import { errorHandler } from "./utils/errorhandler.util";
+
 
 dotenv.config();
 

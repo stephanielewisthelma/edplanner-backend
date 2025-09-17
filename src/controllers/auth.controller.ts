@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
-import { AuthServicesImpl } from "../service/impl/auth.implementation.js";
-import { LoginDTO } from "../dtos/userLoginDTO.dto.js";
+import { AuthServicesImpl } from "../service/impl/auth.implementation";
+import { LoginDTO } from "../dtos/userLoginDTO.dto";
 
 export class AuthController {
   private authService: AuthServicesImpl;
