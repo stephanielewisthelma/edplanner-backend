@@ -28,6 +28,7 @@ export class UserController {
 
 
   public getAllUsers = async (
+    req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void | any> => {
