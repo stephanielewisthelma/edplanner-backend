@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stephanielewisthelma/edplanner-backend.git"
@@ -21,6 +22,7 @@
     "@prisma/client": "^6.16.2",
     "@types/cors": "^2.8.19",
     "bcryptjs": "^3.0.2",
+    "class-validator": "^0.14.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
