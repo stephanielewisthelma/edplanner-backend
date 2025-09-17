@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsNumber, Length } from "class-validator";
+
 export class createProductDTO{
     @IsNotEmpty()
     @Length(2, 100)

@@ -3,20 +3,50 @@ import { AuthServices } from "../auth.services";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { CustomError } from "../../utils/customError.utils";
+import { comparePassword, hashPassword } from "../../utils/password.utils";
+import { signUpDTO } from "../../dtos/signUp.dto";
+import { User } from "../../generated/prisma";
 import { db } from "../../config/db";
-import { comparePassword } from "../../utils/password.utils";
+import { StatusCodes } from "http-status-codes";
 
 dotenv.config();
 
 export class AuthServicesImpl implements AuthServices {
-  async login(
-    data: LoginDTO
-  ): Promise<{accessToken: string, refreshToken: string}> {
-    const user = await db.user.findFirst({
-      where: {
-        email: data.email,
-      },
+
+  async signup(data: signUpDTO): Promise<Partial<User>> {
+    const user = await db.user.findUnique({
+      where: {email: data.email}
     });
+
+    if(user) {
+      throw new CustomError(StatusCodes.BAD_REQUEST, "Email already exists");
+    }
+
+    const hashedPassword = await hashPassword(data.password);
+    const newUser = await db.user.create({
+      data: {
+        fullName: data.fullName,
+        email: data.email,
+        password: hashedPassword,
+        
+      },
+      select: {
+        fullName: true,
+        email: true,
+        id: true,
+        role: true
+      }
+    });
+
+    return newUser;
+  };
+
+
+  async login(data: LoginDTO): Promise<{accessToken: string, refreshToken: string}> {
+    const user = await db.user.findUnique({
+      where: {email: data.email}
+    });
+
     if (!user) {
       throw new CustomError(404, "User not found");
     }
@@ -26,23 +56,26 @@ export class AuthServicesImpl implements AuthServices {
       throw new CustomError(401, "Invalid password or email");
     }
 
-    const fullName = user.firstName + " " + user.lastName;
-    const accessToken = this.generateAccessToken(user.id, fullName);
-
-    const refreshToken = this.generateRefreshToken(user.id, fullName)
+    const accessToken = this.generateAccessToken(user.id, user.fullName);
+    const refreshToken = this.generateRefreshToken(user.id, user.fullName);
 
     return {accessToken, refreshToken}
   }
 
-  generateAccessToken(userId: number, name: string): string {
-    return jwt.sign([userId, name], process.env.JWT_SECRET || "", {
-      expiresIn: process.env.JWT_ACCESS_EXPIRES_IN,
-    });
+
+  generateAccessToken(userId: string, name: string): string {
+    return jwt.sign(
+      {userId, name},
+      process.env.JWT_SECRET as string || "",
+      {expiresIn: "2d"}
+    )
   }
 
-  generateRefreshToken(userId: number, name: string): string {
-    return jwt.sign([userId, name], process.env.JWT_SECRET || "", {
-      expiresIn: process.env.JWT_ACCESS_EXPIRES_IN,
-    });
+  generateRefreshToken(userId: string, name: string): string {
+    return jwt.sign(
+      {userId, name},
+      process.env.JWT_SECRET as string || "",
+      {expiresIn: "2d"}
+    )
   }
 }
