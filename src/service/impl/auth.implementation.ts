@@ -3,18 +3,33 @@ import { AuthServices } from "../auth.services";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { CustomError } from "../../utils/customError.utils";
-import { comparePassword } from "../../utils/password.utils";
+import { comparePassword, hashPassword } from "../../utils/password.utils";
 import { signUpDTO } from "../../dtos/signUp.dto";
 import { User } from "../../generated/prisma";
 import { db } from "../../config/db";
+import { StatusCodes } from "http-status-codes";
 
 dotenv.config();
 
 export class AuthServicesImpl implements AuthServices {
 
   async signup(data: signUpDTO): Promise<Partial<User>> {
+    const user = await db.user.findUnique({
+      where: {email: data.email}
+    });
+
+    if(user) {
+      throw new CustomError(StatusCodes.BAD_REQUEST, "Email already exists");
+    }
+
+    const hashedPassword = await hashPassword(data.password);
     const newUser = await db.user.create({
-      data,
+      data: {
+        fullName: data.fullName,
+        email: data.email,
+        password: hashedPassword,
+        
+      },
       select: {
         fullName: true,
         email: true,
@@ -22,7 +37,7 @@ export class AuthServicesImpl implements AuthServices {
         role: true
       }
     });
-    
+
     return newUser;
   };
 
