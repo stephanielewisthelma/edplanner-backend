@@ -12,8 +12,18 @@ dotenv.config();
 
 export class AuthServicesImpl implements AuthServices {
 
-  async signup(data: signUpDTO): Promise<User> {
-    throw new Error("Method not implemented.");
+  async signup(data: signUpDTO): Promise<Partial<User>> {
+    const newUser = await db.user.create({
+      data,
+      select: {
+        fullName: true,
+        email: true,
+        id: true,
+        role: true
+      }
+    });
+    
+    return newUser;
   };
 
 
