@@ -1,10 +1,11 @@
 import { db } from "../../config/db";
-import { Task, User } from "@prisma/client";
+import { Course, Task, User } from "@prisma/client";
 import { createUserDTO } from "../../dtos/userDTO.dto";
 import { CustomError } from "../../utils/customError.utils";
 import { userServices } from "../user.service";
 import { StatusCodes } from "http-status-codes";
 import { createTaskDTO } from "../../dtos/addTask.dto";
+import { createCourseDTO } from "../../dtos/addCourse.dto";
 
 export class userServiceImplementation implements userServices {
   
@@ -50,14 +51,31 @@ export class userServiceImplementation implements userServices {
       where: { id },
     });
   }
-
-
+  
+  
   async addNewTask(data: createTaskDTO): Promise<Task> {
     const newTask = await db.task.create({
       data
     });
 
-    return newTask
+    return newTask;
+  }
+  
+  
+  async addNewCourse(data: createCourseDTO): Promise<Course> {
+    const course = await db.course.findUnique({
+      where: {courseCode: data.courseCode}
+    });
+
+    if(course) {
+      throw new CustomError(StatusCodes.BAD_REQUEST, "Course code is registered already");
+    }
+
+    const newCourse = await db.course.create({
+      data
+    })
+
+    return newCourse;
   }
 
 }

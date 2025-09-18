@@ -1,6 +1,9 @@
 import { Response, Request, NextFunction } from "express";
 import { userServiceImplementation } from "../service/impl/user.implementation";
 import type { createUserDTO } from "../dtos/userDTO.dto";
+import { createTaskDTO } from "../dtos/addTask.dto";
+import { StatusCodes } from "http-status-codes";
+import { createCourseDTO } from "../dtos/addCourse.dto";
 
 export class UserController {
   private userService: userServiceImplementation;
@@ -70,4 +73,34 @@ export class UserController {
       next(error);
     }
   };
+
+
+  public addNewTask = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const data: createTaskDTO = req.body;
+      const newTask = await this.userService.addNewTask(data);
+      res.status(StatusCodes.CREATED).json(newTask);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+
+  public addNewCourse = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const data: createCourseDTO = req.body;
+      const newCourse = await this.userService.addNewCourse(data);
+      res.status(StatusCodes.CREATED).json(newCourse);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

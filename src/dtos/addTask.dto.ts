@@ -12,7 +12,7 @@ export class createTaskDTO{
 
     @IsNotEmpty()
     @IsString()
-    courseId! : string
+    courseCode! : string
 
     @IsNotEmpty()
     @IsString()
