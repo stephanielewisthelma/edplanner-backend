@@ -1,10 +1,13 @@
+import { createCourseDTO } from "../dtos/addCourse.dto";
+import { createTaskDTO } from "../dtos/addTask.dto";
 import { createUserDTO } from "../dtos/userDTO.dto";
-import { User } from "@prisma/client";
+import { Course, Task, User } from "@prisma/client";
 
 export interface userServices {
-  registerUser(data: createUserDTO): Promise<User>;
-  getUserbyId(id: number): Promise<User | null>;
+  getUserbyId(id: string): Promise<User | null>;
   getAllUsers(): Promise<User[]>;
-  updateUser(id: number, data: Partial<createUserDTO>): Promise<User>;
-  deleteUser(id: number): Promise<void>;
+  updateUser(id: string, data: Partial<createUserDTO>): Promise<Partial<User>>;
+  deleteUser(id: string): Promise<void>;
+  addNewTask(data: createTaskDTO): Promise<Task>;
+  addNewCourse(data: createCourseDTO): Promise<Course>;
 }

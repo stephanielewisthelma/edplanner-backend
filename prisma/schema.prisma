@@ -46,6 +46,8 @@ model User {
   fullName     String
   password     String
   role         Role     @default(USER)
+  tasks        Task[]
+  Course       Course[]
   major        String?
   academicYear String?
   createdAt    DateTime @default(now())
@@ -56,7 +58,10 @@ model Task {
   id             String         @id @unique @default(uuid())
   title          String
   description    String
-  course         Course[]
+  userId         String
+  user           User?          @relation(fields: [userId], references: [id])
+  courseCode     String
+  course         Course?        @relation(fields: [courseCode], references: [courseCode])
   category       TaskCategories
   dueDate        DateTime
   dueTime        String
@@ -66,10 +71,23 @@ model Task {
 }
 
 model Course {
-  id        String   @id @unique
-  title     String   @unique
-  teacher   String
-  task      Task[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  courseCode String   @id @unique
+  title      String   @unique
+  teacher    String
+  tasks      Task[]
+  userId     String
+  user       User?    @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model ClassSchedule {
+  id         String   @id @unique @default(uuid())
+  type       String
+  start      String
+  end        String
+  venue      String
+  courseCode String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
