@@ -1,65 +1,81 @@
 import { db } from "../../config/db";
-import { User } from "@prisma/client";
+import { Course, Task, User } from "@prisma/client";
 import { createUserDTO } from "../../dtos/userDTO.dto";
-import { hashPassword } from "../../utils/password.utils";
-import { comparePassword } from "../../utils/password.utils";
 import { CustomError } from "../../utils/customError.utils";
 import { userServices } from "../user.service";
+import { StatusCodes } from "http-status-codes";
+import { createTaskDTO } from "../../dtos/addTask.dto";
+import { createCourseDTO } from "../../dtos/addCourse.dto";
 
 export class userServiceImplementation implements userServices {
-  async registerUser(data: createUserDTO): Promise<User> {
-    const isUser = await db.user.findFirst({
-      where: {
-        email: data.email,
-      },
-    });
-    if (isUser) {
-      throw new CustomError(404, "User with this email already exists");
-    }
-
-    const user = await db.user.create({
-      data: {
-        email: data.email,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        password: await hashPassword(data.password),
-      },
-    });
-    return user;
-  }
-
-  async getUserbyId(id: number): Promise<User | null> {
+  
+  async getUserbyId(id: string): Promise<User | null> {
     const user = await db.user.findUnique({
       where: { id },
     });
     if (!user) {
-      throw new CustomError(404, "User not found");
+      throw new CustomError(StatusCodes.NOT_FOUND, "User not found");
     }
     return user;
   }
-
+  
+  
   async getAllUsers(): Promise<User[]> {
     return await db.user.findMany();
   }
-
-  async updateUser(id: number, data: Partial<createUserDTO>): Promise<User> {
-    const isUserExist = await db.user.update({
+  
+  
+  async updateUser(id: string, data: Partial<createUserDTO>): Promise<Partial<User>> {
+    const user = await db.user.findUnique({
       where: { id },
-      data,
     });
-    if (!isUserExist) {
-      throw new CustomError(404, "User doesn't exist in the database");
+    
+    if (!user) {
+      throw new CustomError(StatusCodes.NOT_FOUND, "User not found");
     }
-    const user = await db.user.update({
+    
+    const updatedUser = await db.user.update({
       where: { id },
       data,
+      omit: {
+        password: true
+      }
     });
-    return user;
+    
+    return updatedUser;
   }
-
-  async deleteUser(id: number): Promise<void> {
+  
+  
+  async deleteUser(id: string): Promise<void> {
     await db.user.delete({
       where: { id },
     });
   }
+  
+  
+  async addNewTask(data: createTaskDTO): Promise<Task> {
+    const newTask = await db.task.create({
+      data
+    });
+
+    return newTask;
+  }
+  
+  
+  async addNewCourse(data: createCourseDTO): Promise<Course> {
+    const course = await db.course.findUnique({
+      where: {courseCode: data.courseCode}
+    });
+
+    if(course) {
+      throw new CustomError(StatusCodes.BAD_REQUEST, "Course code is registered already");
+    }
+
+    const newCourse = await db.course.create({
+      data
+    })
+
+    return newCourse;
+  }
+
 }
