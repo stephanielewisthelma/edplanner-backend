@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,81 +7,110 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  USER
-  ADMIN
-}
-
-enum TaskCategories {
-  exam
-  quiz
-  project
-  reading
-  lab_report
-  presentation
-  research
-}
-
-enum TaskPriority {
-  low
-  medium
-  high
-}
-
-enum TaskStatus {
-  pending
-  in_progress
-  completed
-}
-
 model User {
-  id           String   @id @unique @default(uuid())
-  email        String   @unique
-  fullName     String
-  password     String
-  role         Role     @default(USER)
-  tasks        Task[]
-  Course       Course[]
-  major        String?
-  academicYear String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String    @id @default(uuid())
+  email         String    @unique
+  name          String?
+  password      String
+  role          Role      @default(STUDENT)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  subjects      Subject[]
+  tasks         Task[]
+  assignments   Assignment[]
+  reminders     Reminder[]
+  refreshTokens RefreshToken[]
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Subject {
+  id        String   @id @default(uuid())
+  title     String
+  color     String?
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  classes   Class[]
+  createdAt DateTime @default(now())
+
+  Assignment Assignment[]
+
+  Task Task[]
+}
+
+model Class {
+  id        String   @id @default(uuid())
+  title     String
+  location  String?
+  startTime DateTime
+  endTime   DateTime
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  subjectId String
+  createdAt DateTime @default(now())
 }
 
 model Task {
-  id             String         @id @unique @default(uuid())
-  title          String
-  description    String
-  userId         String
-  user           User?          @relation(fields: [userId], references: [id])
-  courseCode     String
-  course         Course?        @relation(fields: [courseCode], references: [courseCode])
-  category       TaskCategories
-  dueDate        DateTime
-  dueTime        String
-  priority       TaskPriority
-  estimatedHours Decimal
-  status         TaskStatus     @default(pending)
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  dueDate     DateTime?
+  priority    Priority @default(MEDIUM)
+  status      Status   @default(PENDING)
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  subject     Subject? @relation(fields: [subjectId], references: [id])
+  subjectId   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  Reminder Reminder[]
 }
 
-model Course {
-  courseCode String   @id @unique
-  title      String   @unique
-  teacher    String
-  tasks      Task[]
+model Assignment {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  dueDate     DateTime
+  submitted   Boolean  @default(false)
+  grade       Float?
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  subject     Subject? @relation(fields: [subjectId], references: [id])
+  subjectId   String?
+  createdAt   DateTime @default(now())
+}
+
+model Reminder {
+  id         String   @id @default(uuid())
+  title      String
+  remindAt   DateTime
+  user       User     @relation(fields: [userId], references: [id])
   userId     String
-  user       User?    @relation(fields: [userId], references: [id])
+  task       Task?    @relation(fields: [taskId], references: [id])
+  taskId     String?
   createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
 }
 
-model ClassSchedule {
-  id         String   @id @unique @default(uuid())
-  type       String
-  start      String
-  end        String
-  venue      String
-  courseCode String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum Status {
+  PENDING
+  DONE
 }
