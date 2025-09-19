@@ -1,46 +1,32 @@
-import express from "express";
+import app from "./app";
 import dotenv from "dotenv";
-import cors from "cors";
-import { errorHandler } from "./utils/errorhandler.util";
-import authRouter from "./routes/auth.routes";
-import userRouter from "./routes/userRoute.routes";
-
+import cron from "node-cron";
+import prisma from "./utils/prisma";
 
 dotenv.config();
 
-const portEnv = process.env.PORT;
+const port = process.env.PORT || 5000;
 
-if (!portEnv) {
-  console.error("Error: PORT IS NOT DEFINED IN .env FILE");
-  process.exit(1);
-}
+app.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
+});
 
-const PORT: number = parseInt(portEnv, 10);
-if (isNaN(PORT)) {
-  console.error("ERROR: PORT IS NOT A NUMBER IN .env file");
-  process.exit(1);
-}
+// Cron: every minute check for reminders in the next minute
+cron.schedule("* * * * *", async () => {
+  try {
+    const now = new Date();
+    const inOneMinute = new Date(now.getTime() + 60_000);
+    const reminders = await prisma.reminder.findMany({
+      where: { remindAt: { gte: now, lt: inOneMinute } },
+      include: { user: true, task: true },
+    });
 
-const app = express();
-const corsOption = {
-  origin: "*",
-  Credentials: true,
-  allowedHeaders: "*",
-  methods: "GET, HEAD, PUT, PATCH, POST, DELETE",
-};
-
-app.use(cors(corsOption));
-
-app.use(express.json());
-
-app.use("/api/v1/auth", authRouter);
-
-app.use("/api/v1/users", userRouter);
-
-// app.use("/api/v1/courses", courseRouter);
-
-app.use(errorHandler);
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+    for (const r of reminders) {
+      // placeholder: replace with real email/push logic
+      console.log(`[REMINDER] ${r.title} — user: ${r.user.email} — remindAt: ${r.remindAt.toISOString()}`);
+      // Optionally: mark reminder as sent or create notifications table
+    }
+  } catch (err) {
+    console.error("Error in reminder cron:", err);
+  }
 });
