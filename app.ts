@@ -1,13 +1,13 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import authRoutes from "./routes/auth.routes";
-import userRoutes from "./routes/users.routes";
-import subjectRoutes from "./routes/subjects.routes";
-import taskRoutes from "./routes/tasks.routes";
-import classRoutes from "./routes/classes.routes";
-import reminderRoutes from "./routes/reminders.routes";
-import { errorHandler } from "./middlewares/error.middleware";
+import authRoutes from "./src/routes/auth.routes";
+import userRoutes from "./src/routes/userRoute.routes";
+import subjectRoutes from "./src/routes/subjects.routes";
+import taskRoutes from "./src/routes/task.routes";
+import classRoutes from "./src/routes/classes.routes";
+import reminderRoutes from "./src/routes/reminders.routes";
+import { errorHandler } from "./src/middlewares/error.middleware";
 
 dotenv.config();
 
