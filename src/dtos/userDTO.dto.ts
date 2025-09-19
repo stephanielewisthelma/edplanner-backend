@@ -1,18 +1,18 @@
-import { IsEmail, IsNotEmpty, Length } from "class-validator"
+export interface CreateUserDTO {
+  name?: string;
+  email: string;
+  password: string;
+}
 
-export class createUserDTO{
-    @IsNotEmpty()
-    @Length(2, 60)
-    firstName! : string
-    
-    @IsNotEmpty()
-    @Length(2, 60)
-    lastName! : string
+export interface LoginDTO {
+  email: string;
+  password: string;
+}
 
-    @IsEmail()
-    email! : string
-
-    @IsNotEmpty()
-    @Length(8, 20)
-    password! : string
+export interface UserResponseDTO {
+  id: string;
+  name?: string | null;
+  email: string;
+  role: string;
+  createdAt: Date;
 }
