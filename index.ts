@@ -1,7 +1,7 @@
 import app from "./app";
 import dotenv from "dotenv";
 import cron from "node-cron";
-import prisma from "./utils/prisma";
+import prisma from "./src/utils/prisma";
 
 dotenv.config();
 
