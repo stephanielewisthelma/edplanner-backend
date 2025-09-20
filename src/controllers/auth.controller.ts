@@ -1,35 +1,53 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 import dotenv from "dotenv";
 import prisma from "../utils/prisma";
 import { CreateUserDTO, LoginDTO, UserResponseDTO } from "../dtos/userDTO.dto";
+
 dotenv.config();
 
 const SALT_ROUNDS = 10;
 
+// --- helpers ---
 function signAccessToken(user: any) {
-  return jwt.sign({ id: user.id, role: user.role, email: user.email }, process.env.JWT_SECRET as string, {
-    expiresIn: process.env.ACCESS_TOKEN_EXPIRY || "15m",
-  });
+  const options: SignOptions = {
+    expiresIn: (process.env.ACCESS_TOKEN_EXPIRY || "15m") as any, // ✅ fixed
+  };
+
+  return jwt.sign(
+    { id: user.id, role: user.role, email: user.email },
+    process.env.JWT_SECRET || "defaultsecret",
+    options
+  );
 }
 
 function signRefreshToken(user: any) {
-  return jwt.sign({ id: user.id }, process.env.JWT_SECRET as string, {
-    expiresIn: `${process.env.REFRESH_TOKEN_EXPIRY_DAYS || 30}d`,
-  });
+  const options: SignOptions = {
+    expiresIn: `${process.env.REFRESH_TOKEN_EXPIRY_DAYS || 30}d` as any, // ✅ fixed
+  };
+
+  return jwt.sign(
+    { id: user.id },
+    process.env.JWT_SECRET || "defaultsecret",
+    options
+  );
 }
 
+// --- register ---
 export const register = async (req: Request, res: Response) => {
   try {
     const { name, email, password }: CreateUserDTO = req.body;
-    if (!email || !password) return res.status(400).json({ message: "email and password required" });
+    if (!email || !password)
+      return res.status(400).json({ message: "email and password required" });
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) return res.status(409).json({ message: "User already exists" });
 
     const hashed = await bcrypt.hash(password, SALT_ROUNDS);
-    const user = await prisma.user.create({ data: { name, email, password: hashed } });
+    const user = await prisma.user.create({
+      data: { name, email, password: hashed },
+    });
 
     const accessToken = signAccessToken(user);
     const refreshToken = signRefreshToken(user);
@@ -38,7 +56,14 @@ export const register = async (req: Request, res: Response) => {
       data: {
         token: refreshToken,
         userId: user.id,
-        expiresAt: new Date(Date.now() + Number(process.env.REFRESH_TOKEN_EXPIRY_DAYS || 30) * 24 * 60 * 60 * 1000),
+        expiresAt: new Date(
+          Date.now() +
+            Number(process.env.REFRESH_TOKEN_EXPIRY_DAYS || 30) *
+              24 *
+              60 *
+              60 *
+              1000
+        ),
       },
     });
 
@@ -57,10 +82,12 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
+// --- login ---
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password }: LoginDTO = req.body;
-    if (!email || !password) return res.status(400).json({ message: "email and password required" });
+    if (!email || !password)
+      return res.status(400).json({ message: "email and password required" });
 
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) return res.status(401).json({ message: "Invalid credentials" });
@@ -75,7 +102,14 @@ export const login = async (req: Request, res: Response) => {
       data: {
         token: refreshToken,
         userId: user.id,
-        expiresAt: new Date(Date.now() + Number(process.env.REFRESH_TOKEN_EXPIRY_DAYS || 30) * 24 * 60 * 60 * 1000),
+        expiresAt: new Date(
+          Date.now() +
+            Number(process.env.REFRESH_TOKEN_EXPIRY_DAYS || 30) *
+              24 *
+              60 *
+              60 *
+              1000
+        ),
       },
     });
 
@@ -94,6 +128,7 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
+// --- refresh ---
 export const refreshAccessToken = async (req: Request, res: Response) => {
   try {
     const { token } = req.body;
@@ -103,7 +138,11 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
     if (!stored) return res.status(401).json({ message: "Invalid refresh token" });
 
     try {
-      const payload = jwt.verify(token, process.env.JWT_SECRET as string) as any;
+      const payload = jwt.verify(
+        token,
+        process.env.JWT_SECRET || "defaultsecret"
+      ) as any;
+
       const user = await prisma.user.findUnique({ where: { id: payload.id } });
       if (!user) return res.status(401).json({ message: "User not found" });
 
