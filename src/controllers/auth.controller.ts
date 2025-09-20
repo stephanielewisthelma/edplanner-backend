@@ -12,7 +12,7 @@ const SALT_ROUNDS = 10;
 // --- helpers ---
 function signAccessToken(user: any) {
   const options: SignOptions = {
-    expiresIn: (process.env.ACCESS_TOKEN_EXPIRY || "15m") as any, // ✅ fixed
+    expiresIn: (process.env.ACCESS_TOKEN_EXPIRY || "15m") as any,
   };
 
   return jwt.sign(
@@ -24,7 +24,7 @@ function signAccessToken(user: any) {
 
 function signRefreshToken(user: any) {
   const options: SignOptions = {
-    expiresIn: `${process.env.REFRESH_TOKEN_EXPIRY_DAYS || 30}d` as any, // ✅ fixed
+    expiresIn: `${process.env.REFRESH_TOKEN_EXPIRY_DAYS || 30}d` as any,
   };
 
   return jwt.sign(
@@ -38,15 +38,22 @@ function signRefreshToken(user: any) {
 export const register = async (req: Request, res: Response) => {
   try {
     const { name, email, password }: CreateUserDTO = req.body;
-    if (!email || !password)
+    if (!email || !password) {
       return res.status(400).json({ message: "email and password required" });
+    }
 
     const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing) return res.status(409).json({ message: "User already exists" });
+    if (existing) {
+      return res.status(409).json({ message: "User already exists" });
+    }
 
     const hashed = await bcrypt.hash(password, SALT_ROUNDS);
     const user = await prisma.user.create({
-      data: { name, email, password: hashed },
+      data: {
+        name: name ?? null, // ✅ fix: undefined → null
+        email,
+        password: hashed,
+      },
     });
 
     const accessToken = signAccessToken(user);
@@ -86,14 +93,19 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password }: LoginDTO = req.body;
-    if (!email || !password)
+    if (!email || !password) {
       return res.status(400).json({ message: "email and password required" });
+    }
 
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) return res.status(401).json({ message: "Invalid credentials" });
+    if (!user) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
 
     const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return res.status(401).json({ message: "Invalid credentials" });
+    if (!valid) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
 
     const accessToken = signAccessToken(user);
     const refreshToken = signRefreshToken(user);
@@ -132,10 +144,14 @@ export const login = async (req: Request, res: Response) => {
 export const refreshAccessToken = async (req: Request, res: Response) => {
   try {
     const { token } = req.body;
-    if (!token) return res.status(400).json({ message: "refresh token required" });
+    if (!token) {
+      return res.status(400).json({ message: "refresh token required" });
+    }
 
     const stored = await prisma.refreshToken.findUnique({ where: { token } });
-    if (!stored) return res.status(401).json({ message: "Invalid refresh token" });
+    if (!stored) {
+      return res.status(401).json({ message: "Invalid refresh token" });
+    }
 
     try {
       const payload = jwt.verify(
@@ -144,7 +160,9 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
       ) as any;
 
       const user = await prisma.user.findUnique({ where: { id: payload.id } });
-      if (!user) return res.status(401).json({ message: "User not found" });
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
 
       const accessToken = signAccessToken(user);
       res.json({ accessToken });
