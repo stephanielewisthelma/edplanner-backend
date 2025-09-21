@@ -1,7 +1,9 @@
+// src/controllers/users.controller.ts
 import { Response } from "express";
 import prisma from "../utils/prisma";
 import { AuthRequest } from "../middlewares/auth.middleware";
 
+// get current user profile
 export const getProfile = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.id;
@@ -19,14 +21,20 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
   }
 };
 
+// update profile (only name for now)
 export const updateProfile = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.id;
     const { name } = req.body;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    const user = await prisma.user.update({ where: { id: userId }, data: { name } });
-    res.json({ id: user.id, email: user.email, name: user.name });
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: { name: name ?? null }, // normalize
+      select: { id: true, email: true, name: true },
+    });
+
+    res.json(updated);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
