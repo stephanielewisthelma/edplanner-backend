@@ -1,25 +1,17 @@
 import { Response } from "express";
 import prisma from "../utils/prisma";
 import { AuthRequest } from "../middlewares/auth.middleware";
-import {
-  CreateClassDTO,
-  UpdateClassDTO,
-} from "../dtos/class.dto";
+import { CreateClassDTO, UpdateClassDTO } from "../dtos/class.dto";
 
 /**
  * Create class under a subject
  */
 export const createClass = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    const { title, location, startTime, endTime, subjectId }: CreateClassDTO = req.body;
 
-    const { title, location, startTime, endTime, subjectId }: CreateClassDTO =
-      req.body;
     if (!title || !startTime || !endTime || !subjectId) {
-      return res
-        .status(400)
-        .json({ message: "title, subjectId, startTime, endTime required" });
+      return res.status(400).json({ message: "title, subjectId, startTime, endTime required" });
     }
 
     const classItem = await prisma.class.create({
@@ -29,7 +21,6 @@ export const createClass = async (req: AuthRequest, res: Response) => {
         startTime: new Date(startTime),
         endTime: new Date(endTime),
         subjectId,
-        userId,
       },
     });
 
@@ -41,15 +32,14 @@ export const createClass = async (req: AuthRequest, res: Response) => {
 };
 
 /**
- * List classes for user
+ * List classes (optionally filter by subjectId)
  */
 export const listClasses = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    const { subjectId } = req.query;
 
     const classes = await prisma.class.findMany({
-      where: { userId },
+      where: subjectId ? { subjectId: String(subjectId) } : {},
       include: { subject: true },
       orderBy: { startTime: "asc" },
     });
@@ -66,29 +56,22 @@ export const listClasses = async (req: AuthRequest, res: Response) => {
  */
 export const updateClass = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user?.id;
     const { id } = req.params;
     const data: UpdateClassDTO = req.body;
-
-    if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
     const updateData: any = {};
     if (data.title !== undefined) updateData.title = data.title;
     if (data.location !== undefined) updateData.location = data.location ?? null;
-    if (data.startTime !== undefined)
-      updateData.startTime = new Date(data.startTime);
-    if (data.endTime !== undefined)
-      updateData.endTime = new Date(data.endTime);
+    if (data.startTime !== undefined) updateData.startTime = new Date(data.startTime);
+    if (data.endTime !== undefined) updateData.endTime = new Date(data.endTime);
     if (data.subjectId !== undefined) updateData.subjectId = data.subjectId;
 
     const result = await prisma.class.updateMany({
-      where: { id, userId },
+      where: { id },
       data: updateData,
     });
 
-    if (result.count === 0) {
-      return res.status(404).json({ message: "Class not found" });
-    }
+    if (result.count === 0) return res.status(404).json({ message: "Class not found" });
 
     res.json({ ok: true });
   } catch (err) {
@@ -102,18 +85,13 @@ export const updateClass = async (req: AuthRequest, res: Response) => {
  */
 export const deleteClass = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user?.id;
     const { id } = req.params;
 
-    if (!userId) return res.status(401).json({ message: "Unauthorized" });
-
     const result = await prisma.class.deleteMany({
-      where: { id, userId },
+      where: { id },
     });
 
-    if (result.count === 0) {
-      return res.status(404).json({ message: "Class not found" });
-    }
+    if (result.count === 0) return res.status(404).json({ message: "Class not found" });
 
     res.json({ ok: true });
   } catch (err) {
