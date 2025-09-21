@@ -1,95 +1,101 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import prisma from "../utils/prisma";
-import { SubjectDTO } from "../dtos/subject.dto";
+import { AuthRequest } from "../middlewares/auth.middleware";
+import { CreateSubjectDTO, UpdateSubjectDTO } from "../dtos/subject.dto";
 
-// Create subject
-export const createSubject = async (req: Request, res: Response) => {
+/**
+ * Create a subject
+ */
+export const createSubject = async (req: AuthRequest, res: Response) => {
   try {
-    const { name, description }: SubjectDTO = req.body;
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    if (!name) return res.status(400).json({ message: "Name is required" });
+    const { name, description }: CreateSubjectDTO = req.body;
+    if (!name) return res.status(400).json({ message: "name required" });
 
     const subject = await prisma.subject.create({
       data: {
         name,
-        description: description ?? null, // ✅ fixed
+        description: description ?? null,
+        userId,
       },
     });
 
     res.status(201).json(subject);
   } catch (err) {
-    console.error(err);
+    console.error("createSubject error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// Get all subjects
-export const getSubjects = async (_req: Request, res: Response) => {
+/**
+ * List subjects for authenticated user
+ */
+export const listSubjects = async (req: AuthRequest, res: Response) => {
   try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
     const subjects = await prisma.subject.findMany({
-      include: { classes: true, tasks: true },
+      where: { userId },
+      include: { classes: true, tasks: true }, // ✅ your schema should define this relation
     });
+
     res.json(subjects);
   } catch (err) {
-    console.error(err);
+    console.error("listSubjects error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// Get subject by ID
-export const getSubjectById = async (req: Request, res: Response) => {
+/**
+ * Update subject
+ */
+export const updateSubject = async (req: AuthRequest, res: Response) => {
   try {
+    const userId = req.user?.id;
     const { id } = req.params;
-    if (!id) return res.status(400).json({ message: "Subject ID required" });
+    const { name, description }: UpdateSubjectDTO = req.body;
 
-    const subject = await prisma.subject.findUnique({
-      where: { id },
-      include: { classes: true, tasks: true },
-    });
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    if (!subject) return res.status(404).json({ message: "Subject not found" });
-
-    res.json(subject);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-// Update subject
-export const updateSubject = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { name, description }: SubjectDTO = req.body;
-
-    if (!id) return res.status(400).json({ message: "Subject ID required" });
-
-    const updated = await prisma.subject.update({
-      where: { id },
+    const result = await prisma.subject.updateMany({
+      where: { id, userId },
       data: {
-        name,
-        description: description ?? null, // ✅ fixed
+        name: name ?? undefined,
+        description: description ?? undefined,
       },
     });
 
-    res.json(updated);
+    if (result.count === 0) return res.status(404).json({ message: "Subject not found" });
+
+    res.json({ ok: true });
   } catch (err) {
-    console.error(err);
+    console.error("updateSubject error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// Delete subject
-export const deleteSubject = async (req: Request, res: Response) => {
+/**
+ * Delete subject
+ */
+export const deleteSubject = async (req: AuthRequest, res: Response) => {
   try {
+    const userId = req.user?.id;
     const { id } = req.params;
-    if (!id) return res.status(400).json({ message: "Subject ID required" });
 
-    await prisma.subject.deleteMany({ where: { id } });
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    res.json({ message: "Subject deleted successfully" });
+    const result = await prisma.subject.deleteMany({
+      where: { id, userId },
+    });
+
+    if (result.count === 0) return res.status(404).json({ message: "Subject not found" });
+
+    res.json({ ok: true });
   } catch (err) {
-    console.error(err);
+    console.error("deleteSubject error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

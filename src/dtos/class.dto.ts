@@ -1,8 +1,17 @@
 // src/dtos/class.dto.ts
-export interface ClassDTO {
+
+export interface CreateClassDTO {
   title: string;
-  location?: string; // optional -> normalize to null
-  startTime: string | Date; // accept ISO string or Date
+  location?: string | null;
+  startTime: string | Date;
   endTime: string | Date;
   subjectId: string;
+}
+
+export interface UpdateClassDTO {
+  title?: string;
+  location?: string | null;
+  startTime?: string | Date;
+  endTime?: string | Date;
+  subjectId?: string;
 }
