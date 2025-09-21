@@ -1,5 +1,6 @@
+// src/dtos/userDTO.dto.ts
 export interface CreateUserDTO {
-  name?: string;
+  name?: string; // optional from frontend -> will be stored as null if missing
   email: string;
   password: string;
 }
@@ -11,7 +12,7 @@ export interface LoginDTO {
 
 export interface UserResponseDTO {
   id: string;
-  name?: string | null;
+  name: string | null;
   email: string;
   role: string;
   createdAt: Date;
