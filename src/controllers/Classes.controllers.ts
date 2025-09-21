@@ -1,7 +1,10 @@
 import { Response } from "express";
 import prisma from "../utils/prisma";
 import { AuthRequest } from "../middlewares/auth.middleware";
-import { CreateClassDTO, UpdateClassDTO } from "../dtos/class.dto";
+import {
+  CreateClassDTO,
+  UpdateClassDTO,
+} from "../dtos/class.dto";
 
 /**
  * Create class under a subject
@@ -11,9 +14,12 @@ export const createClass = async (req: AuthRequest, res: Response) => {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    const { title, location, startTime, endTime, subjectId }: CreateClassDTO = req.body;
+    const { title, location, startTime, endTime, subjectId }: CreateClassDTO =
+      req.body;
     if (!title || !startTime || !endTime || !subjectId) {
-      return res.status(400).json({ message: "title, subjectId, startTime, endTime required" });
+      return res
+        .status(400)
+        .json({ message: "title, subjectId, startTime, endTime required" });
     }
 
     const classItem = await prisma.class.create({
@@ -69,8 +75,10 @@ export const updateClass = async (req: AuthRequest, res: Response) => {
     const updateData: any = {};
     if (data.title !== undefined) updateData.title = data.title;
     if (data.location !== undefined) updateData.location = data.location ?? null;
-    if (data.startTime !== undefined) updateData.startTime = new Date(data.startTime);
-    if (data.endTime !== undefined) updateData.endTime = new Date(data.endTime);
+    if (data.startTime !== undefined)
+      updateData.startTime = new Date(data.startTime);
+    if (data.endTime !== undefined)
+      updateData.endTime = new Date(data.endTime);
     if (data.subjectId !== undefined) updateData.subjectId = data.subjectId;
 
     const result = await prisma.class.updateMany({
@@ -78,7 +86,9 @@ export const updateClass = async (req: AuthRequest, res: Response) => {
       data: updateData,
     });
 
-    if (result.count === 0) return res.status(404).json({ message: "Class not found" });
+    if (result.count === 0) {
+      return res.status(404).json({ message: "Class not found" });
+    }
 
     res.json({ ok: true });
   } catch (err) {
@@ -101,7 +111,9 @@ export const deleteClass = async (req: AuthRequest, res: Response) => {
       where: { id, userId },
     });
 
-    if (result.count === 0) return res.status(404).json({ message: "Class not found" });
+    if (result.count === 0) {
+      return res.status(404).json({ message: "Class not found" });
+    }
 
     res.json({ ok: true });
   } catch (err) {

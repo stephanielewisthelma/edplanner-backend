@@ -1,5 +1,3 @@
-// src/dtos/class.dto.ts
-
 export interface CreateClassDTO {
   title: string;
   location?: string | null;

@@ -11,13 +11,13 @@ export const createSubject = async (req: AuthRequest, res: Response) => {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    const { name, description }: CreateSubjectDTO = req.body;
-    if (!name) return res.status(400).json({ message: "name required" });
+    const { title, color }: CreateSubjectDTO = req.body;
+    if (!title) return res.status(400).json({ message: "title required" });
 
     const subject = await prisma.subject.create({
       data: {
-        name,
-        description: description ?? null,
+        title,
+        color: color ?? null,
         userId,
       },
     });
@@ -39,7 +39,11 @@ export const listSubjects = async (req: AuthRequest, res: Response) => {
 
     const subjects = await prisma.subject.findMany({
       where: { userId },
-      include: { classes: true, tasks: true }, // ✅ your schema should define this relation
+      include: {
+        classes: true,
+        Task: true, // ✅ correct relation name from schema
+        Assignment: true,
+      },
     });
 
     res.json(subjects);
@@ -56,15 +60,15 @@ export const updateSubject = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.id;
     const { id } = req.params;
-    const { name, description }: UpdateSubjectDTO = req.body;
+    const { title, color }: UpdateSubjectDTO = req.body;
 
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
     const result = await prisma.subject.updateMany({
       where: { id, userId },
       data: {
-        name: name ?? undefined,
-        description: description ?? undefined,
+        title: title ?? undefined,
+        color: color ?? undefined,
       },
     });
 
