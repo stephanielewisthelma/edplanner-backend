@@ -1,3 +1,4 @@
+// src/routes/reminders.routes.ts
 import { Router } from "express";
 import { authenticate } from "../middlewares/auth.middleware";
 import { createReminder, listReminders, deleteReminder } from "../controllers/reminders.controllers";

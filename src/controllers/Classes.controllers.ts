@@ -1,7 +1,8 @@
 import { Response } from "express";
 import prisma from "../utils/prisma";
 import { AuthRequest } from "../middlewares/auth.middleware";
-import { CreateClassDTO } from "../dtos/class.dto";
+import { ClassDTO } from "../dtos/class.dto";
+
 
 export const createClass = async (req: AuthRequest, res: Response) => {
   try {
