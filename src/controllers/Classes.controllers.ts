@@ -59,6 +59,11 @@ export const updateClass = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const data: UpdateClassDTO = req.body;
 
+    // Validate that id is a non-empty string
+    if (!id) {
+      return res.status(400).json({ message: "Class ID is required" });
+    }
+
     const updateData: any = {};
     if (data.title !== undefined) updateData.title = data.title;
     if (data.location !== undefined) updateData.location = data.location ?? null;
@@ -66,14 +71,12 @@ export const updateClass = async (req: AuthRequest, res: Response) => {
     if (data.endTime !== undefined) updateData.endTime = new Date(data.endTime);
     if (data.subjectId !== undefined) updateData.subjectId = data.subjectId;
 
-    const result = await prisma.class.updateMany({
+    const updatedClass = await prisma.class.update({
       where: { id },
       data: updateData,
     });
 
-    if (result.count === 0) return res.status(404).json({ message: "Class not found" });
-
-    res.json({ ok: true });
+    res.json(updatedClass);
   } catch (err) {
     console.error("updateClass error:", err);
     res.status(500).json({ message: "Server error" });
@@ -87,11 +90,14 @@ export const deleteClass = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
 
-    const result = await prisma.class.deleteMany({
+    // Validate that id is a non-empty string
+    if (!id) {
+      return res.status(400).json({ message: "Class ID is required" });
+    }
+
+    await prisma.class.delete({
       where: { id },
     });
-
-    if (result.count === 0) return res.status(404).json({ message: "Class not found" });
 
     res.json({ ok: true });
   } catch (err) {
