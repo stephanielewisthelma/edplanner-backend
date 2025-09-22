@@ -63,18 +63,24 @@ export const updateSubject = async (req: AuthRequest, res: Response) => {
     const { title, color }: UpdateSubjectDTO = req.body;
 
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    if (!id) return res.status(400).json({ message: "Subject ID is required" });
 
-    const result = await prisma.subject.updateMany({
+    // Build update data object, only including defined properties
+    const updateData: any = {};
+    if (title !== undefined) updateData.title = title;
+    if (color !== undefined) updateData.color = color ?? null;
+
+    // If no fields to update, return early
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ message: "No fields provided to update" });
+    }
+
+    const updatedSubject = await prisma.subject.update({
       where: { id, userId },
-      data: {
-        title: title ?? undefined,
-        color: color ?? undefined,
-      },
+      data: updateData,
     });
 
-    if (result.count === 0) return res.status(404).json({ message: "Subject not found" });
-
-    res.json({ ok: true });
+    res.json(updatedSubject);
   } catch (err) {
     console.error("updateSubject error:", err);
     res.status(500).json({ message: "Server error" });
@@ -90,12 +96,11 @@ export const deleteSubject = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
 
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    if (!id) return res.status(400).json({ message: "Subject ID is required" });
 
-    const result = await prisma.subject.deleteMany({
+    await prisma.subject.delete({
       where: { id, userId },
     });
-
-    if (result.count === 0) return res.status(404).json({ message: "Subject not found" });
 
     res.json({ ok: true });
   } catch (err) {
