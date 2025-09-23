@@ -2,23 +2,13 @@
   "name": "edplanner-backend",
   "version": "1.0.0",
   "description": "Backend for EdPlanner (Node.js + TypeScript)",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "dev": "nodemon --exec ts-node src/index.ts",
+    "dev": "nodemon --exec ts-node index.ts",       
+    "dev:src": "nodemon --exec ts-node src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/stephanielewisthelma/edplanner-backend.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/stephanielewisthelma/edplanner-backend/issues"
-  },
-  "homepage": "https://github.com/stephanielewisthelma/edplanner-backend#readme",
   "dependencies": {
     "@prisma/client": "^6.16.2",
     "@types/cors": "^2.8.19",
