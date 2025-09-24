@@ -50,7 +50,7 @@ export const register = async (req: Request, res: Response) => {
     const hashed = await bcrypt.hash(password, SALT_ROUNDS);
     const user = await prisma.user.create({
       data: {
-        name: name ?? null, // ✅ fix: undefined → null
+        name: name ?? null, 
         email,
         password: hashed,
       },

@@ -1,4 +1,4 @@
-// src/dtos/userDTO.dto.ts
+
 export interface CreateUserDTO {
   name?: string; // optional from frontend -> will be stored as null if missing
   email: string;

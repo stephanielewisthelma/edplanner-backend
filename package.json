@@ -4,7 +4,7 @@
   "description": "Backend for EdPlanner (Node.js + TypeScript)",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "nodemon --exec ts-node index.ts",       
+    "dev": "nodemon --exec ts-node index.ts",
     "dev:src": "nodemon --exec ts-node src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js"
@@ -22,6 +22,7 @@
     "json": "^11.0.0",
     "jsonwebtoken": "^9.0.2",
     "node-cron": "^4.2.1",
+    "nodemailer": "^7.0.6",
     "token": "^0.1.0",
     "web": "^0.0.2"
   },
@@ -32,6 +33,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.5.2",
     "@types/node-cron": "^3.0.11",
+    "@types/nodemailer": "^7.0.1",
     "nodemon": "^3.1.10",
     "prisma": "^6.16.2",
     "ts-node": "^10.9.2",

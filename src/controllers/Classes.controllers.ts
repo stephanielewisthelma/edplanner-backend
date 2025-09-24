@@ -83,14 +83,11 @@ export const updateClass = async (req: AuthRequest, res: Response) => {
   }
 };
 
-/**
- * Delete class
- */
+
 export const deleteClass = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
 
-    // Validate that id is a non-empty string
     if (!id) {
       return res.status(400).json({ message: "Class ID is required" });
     }

@@ -41,7 +41,7 @@ export const listSubjects = async (req: AuthRequest, res: Response) => {
       where: { userId },
       include: {
         classes: true,
-        Task: true, // ✅ correct relation name from schema
+        Task: true, 
         Assignment: true,
       },
     });

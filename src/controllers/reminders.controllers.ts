@@ -1,4 +1,4 @@
-// src/controllers/reminders.controller.ts
+
 import { Response } from "express";
 import prisma from "../utils/prisma";
 import { AuthRequest } from "../middlewares/auth.middleware";

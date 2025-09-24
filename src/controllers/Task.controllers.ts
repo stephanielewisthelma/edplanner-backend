@@ -1,4 +1,4 @@
-// src/controllers/Task.controllers.ts
+
 import { Response } from "express";
 import prisma from "../utils/prisma";
 import { AuthRequest } from "../middlewares/auth.middleware";
@@ -21,7 +21,7 @@ export const createTask = async (req: AuthRequest, res: Response) => {
         title,
         description: description ?? null,
         dueDate: dueDate ? new Date(dueDate) : null,
-        // Guarantee a valid enum value (Prisma expects a Priority, not undefined)
+        
         priority: (priority ?? "MEDIUM") as any,
         userId,
         subjectId: subjectId ?? null,

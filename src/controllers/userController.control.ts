@@ -1,4 +1,4 @@
-// src/controllers/users.controller.ts
+
 import { Response } from "express";
 import prisma from "../utils/prisma";
 import { AuthRequest } from "../middlewares/auth.middleware";
@@ -30,7 +30,7 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
 
     const updated = await prisma.user.update({
       where: { id: userId },
-      data: { name: name ?? null }, // normalize
+      data: { name: name ?? null }, 
       select: { id: true, email: true, name: true },
     });
 
