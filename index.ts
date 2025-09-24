@@ -12,7 +12,23 @@ app.listen(port, () => {
   console.log(`✅ Server running on port ${port}`);
 });
 
-// Cron job runs every minute
+// ✅ Test endpoint to send a test email via Postman
+app.get("/send-test-email", async (req, res) => {
+  try {
+    await sendEmail(
+      "slewisidc230004@gmail.com", // 👈 replace with your real email to test
+      "📩 Test Email from EdPlanner",
+      "This is a plain text test email",
+      "<p><b>This is a test email</b> from EdPlanner 🚀</p>"
+    );
+    res.json({ message: "✅ Test email sent! Check your inbox." });
+  } catch (err) {
+    console.error("Error sending test email:", err);
+    res.status(500).json({ error: "❌ Failed to send email" });
+  }
+});
+
+// ✅ Cron job runs every minute for reminders
 cron.schedule("* * * * *", async () => {
   try {
     const now = new Date();
@@ -45,7 +61,7 @@ cron.schedule("* * * * *", async () => {
 
       console.log(`[REMINDER] ${r.title} — user: ${r.user.email}`);
 
-      // send HTML email
+      // ✅ Send reminder email
       await sendEmail(r.user.email, subject, "", html);
     }
   } catch (err) {
