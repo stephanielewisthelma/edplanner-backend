@@ -55,14 +55,13 @@ model Class {
   subjectId String
   createdAt DateTime @default(now())
 }
-
 model Task {
   id          String   @id @default(uuid())
   title       String
   description String?
   dueDate     DateTime?
   priority    Priority @default(MEDIUM)
-  status      Status   @default(PENDING)
+  status      Status   @default(PENDING)   // ✅ keep status in schema
   user        User     @relation(fields: [userId], references: [id])
   userId      String
   subject     Subject? @relation(fields: [subjectId], references: [id])
@@ -72,6 +71,8 @@ model Task {
 
   Reminder Reminder[]
 }
+
+
 
 model Assignment {
   id          String   @id @default(uuid())
@@ -112,5 +113,6 @@ enum Priority {
 
 enum Status {
   PENDING
+  IN_PROGRESS   // ✅ added new option
   DONE
 }
